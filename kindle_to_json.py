@@ -45,9 +45,10 @@ def create_json_from_db(db_file: str):
             # Setup an empty dict for the current book
             cur_book_data = {}
             books.append(cur_book_data)
+            cur_book_data['title'] = title
             # Setup an empty array where we'll store word info later
             word_info = []
-            cur_book_data[title] = word_info
+            cur_book_data['words'] = word_info
             # Per documentation, using this format for the ident insertion when we execute our query
             ident_as_tuple = (ident,)
             # Use the query to ensure we get unique words in the event there have been
