@@ -7,11 +7,11 @@ Currently only supports Japanese books/lookups into English definitions.
 
 
 Output includes:
-   > Word
-   > Reading (in hirigana)
-   > Definition (in English)
-   > Part of Speech
-   > Sample Usage (context around the looked-up word)
+   * Word
+   * Reading (in hirigana)
+   * Definition (in English)
+   * Part of Speech
+   * Sample Usage (context around the looked-up word)
 
 
 The output is provided in "kindle_data.json" when the program finishes.
