@@ -1,1 +1,2 @@
 requests
+jisho_api
