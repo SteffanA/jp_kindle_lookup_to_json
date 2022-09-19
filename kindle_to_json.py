@@ -44,8 +44,11 @@ Example output:
     }
 '''
 def create_json_from_word(word: str, sample_sentence: str = None) -> dict:
+    if not word or word == '' or word == '\n' or word == '\r' or word == '\t':
+        return None
+    print('Creating json for', word)
     res = requests.get(JISHO_API + word)
-    res_data = res.json().get('data', [])
+    res_data = res.json().get('data', []) if res else None
     # Default definition, reading, part of speech to 'invalid' results
     # Anything processing the JSON can look for these specifically
     definition = 'NO DEFINITION FOUND'
@@ -159,7 +162,8 @@ WHERE book_key=? AND NOT EXISTS (
                 word = word.split(':')[1]
                 cur_word_dict = create_json_from_word(word, usage)
                 # Add this word to the word info for the current book
-                word_info.append(cur_word_dict)
+                if cur_word_dict:
+                    word_info.append(cur_word_dict)
             # Finished getting information for the current words in the current book
             # print(str(word_info)) # <-- uncomment if you wish to see the results per book
         # End of loop going through every book in DB
@@ -186,9 +190,11 @@ def create_json_from_csv(csv_file: str):
             reader = csv.reader(c)
             for row in reader:
                 for word in row:
+                    word = word.rstrip('\n').lstrip('\n').strip()
                     cur_word_dict = create_json_from_word(word)
-                    # Add this word to the word info for the current book
-                    word_info.append(cur_word_dict)
+                    if cur_word_dict:
+                        # Add this word to the word info for the current book
+                        word_info.append(cur_word_dict)
             # Finished getting information for the current words from the csv
         # Write out to our json file now.
         f.write(json.dumps(json_head, indent=4))
