@@ -75,15 +75,19 @@ def create_json_from_word(word: str, sample_sentence: str = None) -> dict:
         if not sample_sentence:
             # Take a sample sentence from Jisho if we didn't provide one
             # Note we have to use the 3rd party wrapper here since Jisho has no sentence API
-            sample = Sentence.request(word)
-            if sample:
-                try:
-                    sample = sample.data[0].japanese # overload to the sentence in japanese alone
-                    # Remove 'furigana' - everything in parenthesis. This could break some samples
-                    # but it's unlikely
-                    sample = re.sub("[\(\[].*?[\)\]]", "", sample)
-                except Exception as e:
-                    print('Error parsing sample', e)
+            sample = None
+            try:
+                sample = Sentence.request(word)
+                if sample:
+                    try:
+                        sample = sample.data[0].japanese # overload to the sentence in japanese alone
+                        # Remove 'furigana' - everything in parenthesis. This could break some samples
+                        # but it's unlikely
+                        sample = re.sub("[\(\[].*?[\)\]]", "", sample)
+                    except Exception as e:
+                        print('Error parsing sample', e)
+            except Exception as e:
+                print('Jisho API error: ', e)
             sample_sentence = sample if sample else ''
     # Implied else of no res data means we stick with default invalid definition/reading/part of speech
 
@@ -172,8 +176,8 @@ WHERE book_key=? AND NOT EXISTS (
         # Write out to our json file now.
         f.write(json.dumps(json_head, indent=4))
 
-def create_json_from_csv(csv_file: str):
-    with open('kindle_data.json', 'w+', encoding='utf-8') as f:
+def create_json_from_csv(csv_file: str, json_title: str = 'kindle_data.json', book_title: str = 'DEFAULT_TITLE'):
+    with open(json_title, 'w+', encoding='utf-8') as f:
         # Setup the root of the json object
         json_head = {}
         # We will store different books as separate arrays of words
@@ -182,7 +186,7 @@ def create_json_from_csv(csv_file: str):
         # Setup an empty dict for the current book
         cur_book_data = {}
         books.append(cur_book_data)
-        cur_book_data['title'] = 'DEFAULT_TITLE_REPLACE_ME' # Assume load 1 CSV at a time
+        cur_book_data['title'] = book_title # Assume load 1 CSV at a time
         # Setup an empty array where we'll store word info later
         word_info = []
         cur_book_data['words'] = word_info
@@ -210,4 +214,6 @@ if __name__ == "__main__":
         create_json_from_db(db)
     else:
         # Assume CSV file
-        create_json_from_csv(db)
+        if len(sys.argv) > 2:
+            json_title = sys.argv[2]
+        create_json_from_csv(db, json_title if json_title else None)
